@@ -50,6 +50,11 @@
 					var segundos = $(this).html();
 					var segundos_atuais = parseInt(segundos) - 1;
 
+					if(segundos_atuais <= 0){
+						window.location.href= "/jogo?msg=C"
+					} else{
+						$(this).html(segundos_atuais);
+					}
 					$(this).html(segundos_atuais)
 				});
 
@@ -80,6 +85,17 @@
 				<% if (msg == 'B'){ %>
 					<div class="alert alert-info" id="msg">
 						<strong> Ação realizada com sucesso!</strong>
+					</div>
+				<% } %>
+
+				<% if (msg == 'C'){ %>
+					<div class="alert alert-info" id="msg">
+						<strong> Senhor, a atividade foi finalizada!</strong>
+					</div>
+				<% } %>
+				<% if (msg == 'D'){ %>
+					<div class="alert alert-info" id="msg">
+						<strong> Senhor, sua ordem foi revogada!</strong>
 					</div>
 				<% } %>
 	    	
@@ -139,7 +155,7 @@
 					
 					<div class="col-sm-2">
 						<img src="images/outros/moeda.jpg" title="Moeda" alt="Moeda"/>
-						<span><%=jogo.moedas%></span>
+						<span><%=jogo.moeda%></span>
 					</div>
 					
 				</div>

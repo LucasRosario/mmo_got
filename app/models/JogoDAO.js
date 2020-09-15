@@ -1,3 +1,6 @@
+const { ObjectId } = require('mongodb');
+
+var ObjectID = require('mongodb').ObjectId;
 function JogoDAO(connection){
   this._connection = connection();
 }
@@ -32,26 +35,40 @@ JogoDAO.prototype.iniciaJogo = function(res, usuario, casa, msg){
 }
 
 JogoDAO.prototype.acao = function(acao){
-  this._connection.open(function(err, mongoclinet){
-    mongoclinet.collection("acao",function(err, collection){
+    this._connection.open(function(err, mongoclinet){
+        mongoclinet.collection("acao",function(err, collection){
+          var date = new Date();
+          var tempo = null;
+          
+          switch(parseInt(acao.acao)){
+            case 1: tempo = 1 * 60 * 60000 ; break; 
+            case 2: tempo = 2 * 60 * 60000; break;
+            case 3: tempo = 5 * 60 * 60000; break;
+            case 4: tempo = 5 * 60 * 60000; break;
+          }
+          
+          acao.acao_termina_em =  date.getTime() + tempo;
+          collection.insert(acao);
+        });
+        
+        mongoclinet.collection("jogo",function(err, collection){
+          var moedas = null;
 
-      var date = new Date();
-      var tempo = null;
+          switch(parseInt(acao.acao)){
+            case 1: moedas = -2 * acao.quantidade ; break;
+            case 2: moedas = -3 * acao.quantidade ; break;
+            case 3: moedas = -1 * acao.quantidade ; break;
+            case 4: moedas = -1 * acao.quantidade ; break;
+          }
 
-
-      switch(parseInt(acao.acao)){
-        case 1: tempo = 60 * 60000 ; break; 
-        case 1: tempo = 2 * 60 * 60000; break;
-        case 1: tempo = 5 * 60 * 60000; break;
-        case 1: tempo = 5 * 60 * 60000; break;
-      }
-
-      acao.acao_termina_em =  date.getTime() + tempo;
-      collection.insert(acao);
-
-      mongoclinet.close();
+          collection.update(
+            { usuario: acao.usuario },
+            { $inc: {moeda: moedas} }
+          );
+          
+          mongoclinet.close();
+        });
     });
-  });
 }
 
 JogoDAO.prototype.getAcoes = function(usuario, res){
@@ -68,9 +85,28 @@ JogoDAO.prototype.getAcoes = function(usuario, res){
         mongoclinet.close();
       }); 
     });
+
   });
 }
 
+JogoDAO.prototype.revogarAcao = function(_id, res){
+  this._connection.open(function(err, mongoclinet){
+    mongoclinet.collection("acao",function(err, collection){
+      collection.remove(
+        {_id : ObjectID(_id)},
+        function(err, result){
+          res.redirect("jogo?msg=D");
+          mongoclinet.close();
+        }
+      );
+      
+
+      
+    }); 
+  
+
+  });
+}
 
 module.exports = function(){
   return JogoDAO;
